@@ -1,20 +1,123 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MindWave</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <div class="container">
-    <img src="logo.png" alt="Chat Logo" class="logo" />
-    <div id="chat" class="chat-window"></div>
-    <div class="input-area">
-      <input type="text" id="userInput" placeholder="How are you feeling?" autocomplete="off"/>
-      <button onclick="sendMessage()">Send</button>
-    </div>
-  </div>
-  <script src="script.js"></script>
-</body>
-</html>
+const prompts = [
+  // 💬 Mental Health
+  "I feel anxious, help me calm down.",
+  "Why do I keep overthinking everything?",
+  "Give me a 5-minute mindfulness exercise.",
+  "I’m feeling really low today, what should I do?",
+  "Help me stop a panic attack.",
+  "I can’t sleep because of racing thoughts.",
+  "I want to cry but don’t know why.",
+  "Suggest a self-care routine for today.",
+  "How can I stop being so hard on myself?",
+  "Give me daily affirmations.",
+  "Talk to me like a friend would right now.",
+  "I feel lonely, what should I do?",
+  "Motivate me to get out of bed.",
+  "Remind me that I’m enough.",
+  "I need someone to just listen.",
+  "I feel like I’m not doing enough in life.",
+  "Help me breathe through this moment.",
+  "How can I ground myself right now?",
+  "I’m afraid of failing again. Help.",
+  "What are signs I might be burned out?",
+  "What can I do to feel mentally better?",
+  "Help me deal with negative thoughts.",
+  "Why do I feel numb sometimes?",
+  "Teach me positive self-talk.",
+  "Give me a reason to keep going.",
+  "What does healing really mean?",
+
+  // 🌍 General Prompts
+  "What’s a fun fact to cheer me up?",
+  "Give me a random riddle.",
+  "Tell me a weird but true fact.",
+  "Who was Nikola Tesla?",
+  "Translate ‘You are amazing’ to Spanish.",
+  "Give me a productivity tip.",
+  "How can I be more confident?",
+  "What’s the capital of Iceland?",
+  "Recommend a random movie to watch tonight.",
+  "Suggest a good song for studying.",
+  "Can you write a short poem for me?",
+  "What’s the meaning of life? (silly version)",
+  "Tell me a motivational quote.",
+  "Make up a new holiday.",
+  "Write me a silly haiku.",
+  "Tell me a story about a talking potato.",
+  "What if dogs could talk?",
+  "Give me a science fact.",
+  "What’s your favorite book?",
+  "How does a rainbow form?"
+];
+
+// --- Replace this with your OpenRouter key ---
+const OPENROUTER_API_KEY = "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";
+
+// --- Chat Logic ---
+async function sendMessage(userInput) {
+  const chat = document.getElementById("chat");
+
+  // Show user message
+  chat.innerHTML += `<div class="user-msg">${userInput}</div>`;
+
+  const headers = {
+    "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+    "Content-Type": "application/json",
+    "HTTP-Referer": "https://yourdomain.com",
+    "X-Title": "ChillMate"
+  };
+
+  const body = {
+    model: "mistralai/mistral-7b-instruct", // Free model
+    messages: [
+      { role: "system", content: "You are a helpful, empathetic mental health assistant." },
+      { role: "user", content: userInput }
+    ]
+  };
+
+  // Show thinking...
+  chat.innerHTML += `<div class="bot-msg loading">Typing...</div>`;
+
+  try {
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers,
+      body: JSON.stringify(body)
+    });
+
+    const data = await res.json();
+    const reply = data.choices?.[0]?.message?.content || "Sorry, I couldn’t understand that.";
+
+    // Remove loading
+    document.querySelector(".loading").remove();
+
+    // Show bot reply
+    chat.innerHTML += `<div class="bot-msg">${reply}</div>`;
+    chat.scrollTop = chat.scrollHeight;
+  } catch (err) {
+    document.querySelector(".loading").remove();
+    chat.innerHTML += `<div class="bot-msg">Oops! Error connecting to AI.</div>`;
+    console.error(err);
+  }
+}
+
+// --- Prewritten Commands Support ---
+function loadRandomPrompt() {
+  const input = document.getElementById("userInput");
+  const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+  input.value = randomPrompt;
+}
+
+// --- Event Binding ---
+document.getElementById("sendBtn").addEventListener("click", () => {
+  const input = document.getElementById("userInput");
+  const msg = input.value.trim();
+  if (msg) {
+    sendMessage(msg);
+    input.value = "";
+  }
+});
+
+document.getElementById("promptBtn").addEventListener("click", () => {
+  loadRandomPrompt();
+});
