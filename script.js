@@ -10,7 +10,7 @@ async function sendMessage() {
   chat.innerHTML += `<div class="bot-msg">🤖 Typing...</div>`;
   chat.scrollTop = chat.scrollHeight;
 
-  const apiKey = "sk-or-v1-xxxxxxxxxxxxxxxxxxxxxxxx"; // ← your OpenRouter key
+  const apiKey = "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"; // ← your OpenRouter key
 
   try {
     const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
